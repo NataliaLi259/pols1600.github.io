@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Week 11 - Probability</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Danilo Freire" />
+    <meta name="date" content="2019-04-10" />
+    <link href="week11b_files/remark-css/default.css" rel="stylesheet" />
+    <link href="week11b_files/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="week11b_files/remark-css/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Week 11 - Probability
+## Large Sample Theorems
+<html>
+<div style="float:left">
+
+</div>
+<hr color='#EB811B' size=1px width=800px>
+</html>
+### Danilo Freire
+### 10 April 2019
+
+---
+
+
+
+
+&lt;style&gt;
+
+.remark-slide-number {
+  position: inherit;
+}
+
+.remark-slide-number .progress-bar-container {
+  position: absolute;
+  bottom: 0;
+  height: 6px;
+  display: block;
+  left: 0;
+  right: 0;
+}
+
+.remark-slide-number .progress-bar {
+  height: 100%;
+  background-color: #EB811B;
+}
+
+.orange {
+  color: #EB811B;
+}
+&lt;/style&gt;
+
+# Today's Agenda
+
+.font150[
+* Two large sample theorems:
+
+* The Law of Large Numbers
+  - Gambler's Fallacy
+  - Infinite Monkey Theorem
+    
+* The Central Limit Theorem
+]
+
+---
+
+class: inverse, center, middle
+
+# But before that...
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt;  
+
+---
+
+# News on the Taleb/Silver Debate
+
+.center[![:scale 100%](taleb01.png)]
+---
+
+# News on the Taleb/Silver Debate
+
+.center[![:scale 70%](taleb02.png)]
+---
+
+# Taleb/Pinker
+
+.center[![:scale 80%](vox.png)]
+
+.font150[
+.center[&lt;https://www.vox.com/2015/5/21/8635369/pinker-taleb&gt;]
+]
+
+---
+
+# Recommended: Fooled by Randomness
+
+.center[![:scale 45%](randomness.png)]
+---
+
+# Recommended: Black Swan
+
+.center[![:scale 45%](black-swan.png)]
+
+---
+
+# Taleb on Pinker
+
+.center[![:scale 100%](taleb-pinker.png)]
+
+---
+
+# Taleb on Krugman
+
+.center[![:scale 100%](taleb-krugman.png)]
+---
+
+# But if you criticise him...
+
+.center[![:scale 60%](block.jpg)]
+
+---
+
+# Law of Large Numbers
+
+.font130[
+* In many probabilistic models, certain patterns emerge as the sample size increases
+
+* .orange[Law of Large Numbers:] If we have a sample of i.i.d. observations from random variable `\(X\)` with expectation `\(\mathbb{E}(X)\)`, then
+
+`$$\bar{X}_{{n}} = \frac{1}{N} \sum_{i = 1}^{N} X_{i} \rightarrow \mathbb{E}(X)$$`]
+--
+.font130[
+* .orange[i.i.d.:] independent and identically distributed random variable. 
+
+* In English: As the number of draws increases, the sample mean `\(\bar{X}_{{n}}\)` approaches `\(\rightarrow\)` the variable's distribution expectation `\(\mathbb{E}(X)\)`
+]
+---
+
+# Law of Large Numbers
+
+.font150[
+* Examples
+
+	- Rolling a die, 500 times
+	- Flipping a coin, also many times
+	- Drawing respondents from a population of supporters and non-supporters for politician A
+	- Statistical simulations
+]
+---
+
+# Simulation: Coin Tossing
+
+.font150[
+
+```r
+draws &lt;- seq(from = 1, to = 500)  # coin tosses
+
+avgs &lt;- rep(NA, length(draws))    # empty vector
+
+for(i in 1:length(draws)){
+    samp &lt;- sample(c(0, 1), draws[i], replace = T)
+    avgs[i] &lt;- mean(samp) # sampling w/ replacement
+}
+
+plot(draws, avgs, type = "l", ylim = c(0, 1),
+     main = "Bernoulli with Prob. 0.5") # plot
+abline(h = 0.5, col = "red", lwd = 2)  # expectation 
+```
+]
+---
+
+# Simulation: Coin Tossing
+
+.font130[
+&lt;img src="week11b_files/figure-html/coin02-1.png" style="display: block; margin: auto;" /&gt;
+]
+---
+
+# Simulation: Rolling a Die 
+
+.font130[
+
+```r
+draws &lt;- seq(from = 1, to = 500) # number of draws
+
+avgs &lt;- rep(NA, length(draws))   # empty vector 
+
+for(i in 1:length(draws)){       
+    samp &lt;- sample(c(1:6), draws[i], replace = T)
+    avgs[i] &lt;- mean(samp)  # sampling w/ replacement
+}
+
+plot(draws, avgs, type = "l", ylim = c(0, 6),
+     main = "Uniform [1, 6]") # plot
+abline(h = 3.5, col = "red", lwd = 2)         # expectation
+```
+]
+---
+
+# Simulation: Rolling a Die 
+
+.font150[
+&lt;img src="week11b_files/figure-html/die02-1.png" style="display: block; margin: auto;" /&gt;
+]
+---
+
+# Gambler's Fallacy
+
+.font150[
+* The Law of Large Numbers, as the name implies, is only valid for .orange[large samples]
+
+* There is _no principle_ that supports the idea that after a few positive draws a negative draw must appear to "balance" the results
+
+* Example: after 10 heads, _another head can come up_. Why?
+]
+--
+.font150[
+* .orange[Because the events are independent]
+]
+---
+
+# Monte Carlo Casino
+
+.center[![:scale 65%](bbc.png)]
+
+.center[&lt;http://www.bbc.com/future/story/20150127-why-we-gamble-like-monkeys&gt;]
+
+---
+
+# Jorge Luis Borges
+
+.center[![:scale 100%](borges.jpg)]
+
+.font150[.center[https://en.wikipedia.org/wiki/Jorge_Luis_Borges]]
+---
+
+# Infinite Monkey Theorem
+
+.center[![:scale 50%](monkey.jpg)]
+
+.font150[
+* "...a half-dozen monkeys provided with typewriters would, in a few eternities, produce all the books in the British Museum. Strictly speaking, one immortal monkey would suffice." (La Biblioteca Total, 1939)
+]
+---
+
+# The Total Library
+
+.font130[
+"Everything would be in the Library's blind volumes. Everything: the detailed history of the future, Aeschylus' _The Egyptians_, the exact number of times that the waters of the Ganges have reflected the flight of a falcon, the secret and true nature of Rome, the encyclopedia Novalis would have constructed, my dreams and half-dreams at dawn on August 14, 1934, the proof of Pierre Fermat's theorem, [...] the song the sirens sang, the complete catalog of the Library, the proof of the inaccuracy of that catalog. Everything: but for every sensible line or accurate fact there would be millions of meaningless cacophonies, verbal farragoes, and babblings. Everything: but all the generations of mankind could pass before the dizzying shelves—shelves that obliterate the day and on which chaos lies—ever reward them with a tolerable page."
+]
+---
+
+# The Library of Babel
+
+.center[![:scale 60%](babel.jpg)]
+
+.font150[
+.center[&lt;https://en.wikipedia.org/wiki/The_Library_of_Babel&gt;]
+]
+
+---
+
+# Central Limit Theorem
+
+.font140[
+* In practice we observe only the sample mean and _do not know the expectation_
+
+* .orange[The central limit theorem] shows that the distribution of the sample mean approaches the normal distribution as the sample size increases
+
+* Again, not the sample itself approaches the normal distribution, .orange[but only the sample means]
+
+* Z-score of the sample mean converges in distribution to the standard normal distribution or `\(\mathcal{N}(0,1)\)` as the sample size increases
+
+* Interestingly the result is true .orange[for almost any distribution!]
+]
+---
+
+# Central Limit Theorem
+
+.font150[
+* Experiment: flip a coin 10 times and record the number of heads
+
+* Repeat experiment above 1000 times
+]
+---
+
+# Central Limit Theorem
+
+.font110[
+
+```r
+avgs &lt;- rep(NA, 1000)
+for(i in 1:1000){
+  samp &lt;- rbinom(1000, 10, p=0.5)
+  avgs[i] &lt;- mean(samp)
+}
+plot(density(avgs))
+```
+
+&lt;img src="week11b_files/figure-html/clt01-1.png" style="display: block; margin: auto;" /&gt;
+]
+---
+
+# Central Limit Theorem
+
+.font150[
+* Visualisation: &lt;https://seeing-theory.brown.edu/probability-distributions/index.html&gt;
+]
+---
+
+# Central Limit Theorem
+
+.font150[
+* _Why do we care about it?_
+
+* Hypothetically repeated polls with sample size `\(N\)`
+
+* As the number of polls increase, we get closer and closer to the true population mean, _regardless of the distribution of the each particular poll_
+
+* Since we are taking the means of each poll, rare events become even more rare
+
+* It is really hard to get a "weird average" versus to get a "weird individual." That difficulty in getting a weird average is what pulls the plot into a nice tight bell curve 
+]
+
+---
+class: inverse, center, middle
+
+# See you on Friday!
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"ratio": "4:3",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"slideNumberFormat": "<div class=\"progress-bar-container\">   <div class=\"progress-bar\" style=\"width: calc(%current% / %total% * 100%);\">   </div> </div>"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

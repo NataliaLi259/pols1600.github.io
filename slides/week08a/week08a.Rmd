@@ -1,0 +1,230 @@
+---
+title: "Week 08 - Regression"
+subtitle: "Multivariate Models, Statistical Control and Standardised Coefficients<html><div style='float:left'></div><hr color='#EB811B' size=1px width=800px></html>"
+author: "Danilo Freire"
+date: "11th March 2019"
+output: 
+  xaringan::moon_reader:
+    css: [default, metropolis, metropolis-fonts]
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    nature: 
+      beforeInit: "macros.js"
+      highlightStyle: github
+      ratio: 4:3
+      highlightLines: true
+      countIncrementalSlides: false
+      slideNumberFormat: |
+        <div class="progress-bar-container">
+          <div class="progress-bar" style="width: calc(%current% / %total% * 100%);">
+          </div>
+        </div>
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+r <- getOption("repos")
+r["CRAN"] <- "http://cran.cnr.berkeley.edu/"
+options(repos = r)
+set.seed(12345)
+```
+
+<style>
+
+.remark-slide-number {
+  position: inherit;
+}
+
+.remark-slide-number .progress-bar-container {
+  position: absolute;
+  bottom: 0;
+  height: 6px;
+  display: block;
+  left: 0;
+  right: 0;
+}
+
+.remark-slide-number .progress-bar {
+  height: 100%;
+  background-color: #EB811B;
+}
+
+.orange {
+  color: #EB811B;
+}
+</style>
+
+# Today's Agenda
+
+.font150[
+* Brief recap of multivariate linear models
+
+* Statistical controls
+
+* Standardised coefficients
+]
+---
+
+# Multivariate Linear Models
+
+.font150[
+* We can include more than one predictor in the regression model: `lm(Y ~ X1 + X2 + ... + Xn, data = yourdataset)`
+
+* Principle of regression model stays the same: to draw the best fitting line through a cloud of points (now in multiple dimensions)
+]
+---
+
+# Credit Limit, Balance and Income
+
+.center[![:scale 100%](2numxplot1-1.png)]
+---
+
+# Multivariate Linear Model
+
+.center[![:scale 90%](newplot.png)]
+---
+
+# Interpretation
+
+.font150[
+* $Y = \alpha + \beta_1 X_1 + \beta_2 X_2 + ... + \beta_n X_n + \epsilon$
+  
+* $\alpha =$ intercept, the value of $Y$ when _all_ $X$ variables are zero
+
+* $\beta_n =$ the slope of predictor $X_n$
+
+* $\beta_n =$ predicted change in $\hat{Y}$ when $X_n$ increases by 1 unit _and all other predictors are held constant_
+]
+---
+
+# Statistical Control
+
+.font150[
+* We include more variables in a regression also because we want to .orange[control for confounders]
+
+* We hold constant factors that we believe are also associated with $Y$
+
+* We can then _dissociate_ what can be explained by $X_1$ from what can be explained by $X_2$
+
+* We have "more realistic" estimates
+ 
+* Example: impact of GDP on child mortality when political regime doesn't change
+]
+---
+
+# Child Mortality
+
+.font120[
+```{r mort,fig.align="center",tidy=F,warning=F,message=F,cache=T}
+mortality <- read.csv("https://raw.githubusercontent.com/pols1600/pols1600.github.io/master/datasets/prediction/bivariate_data.csv")
+mortality <- subset(mortality, subset = Year == 2010)
+names(mortality)
+bivar <- lm(Child.Mortality ~ log(GDP), data = mortality)
+multiple <- lm(Child.Mortality ~ log(GDP) + PolityIV, data = mortality)
+coef(bivar)
+coef(multiple)
+```
+]
+---
+
+# Adjusted R-Squared
+
+.font150[
+* As we saw last week, $R^2$ is not a very good measure of model fit
+
+* The more predictors you add to the model, the higher the $R^2$
+
+* Adjusted $R^2$ will equal $R^2$ for one predictor variable, but lower if you add more
+
+* Adjusted $R^2$ "penalises" you for adding the extra predictor variables that don't improve the existing model
+]
+---
+
+# Adjusted R-Squared
+
+.font150[
+```{r adj01,fig.align="center",tidy=F,warning=F,message=F,cache=T}
+summary(bivar)$r.squared
+summary(multiple)$r.squared
+summary(multiple)$adj.r.squared
+```
+]
+---
+
+# Standardised Coefficients
+
+.font150[
+* Regression coefficients cannot be directly compared as independent variables have different scales (dollars, years, etc)
+
+* One way to make them more comparable is to standardise the variables
+
+* You already know how to standardise variables: _z-score_
+
+* (value - mean)/standard deviation
+
+* So the variables would have a mean of zero and a standard deviation of 1
+]
+---
+
+# Standardised Coefficients
+
+.font150[
+* When continuous variables are standardised, the coefficients indicate _one standard deviation change_
+
+* We can compare 1 sd in all factors
+
+* We use the `scale()` command to standardise factors
+
+* The intercept _is still_ the value of $\hat{Y}$ when all predictors equal zero
+
+* .orange[But now zero is the mean value of the predictors]
+]
+---
+
+# Standardised Coefficients
+
+.font120[
+```{r mortsd,fig.align="center",tidy=F,warning=F,message=F,cache=T}
+mean(mortality$PolityIV, na.rm = TRUE)
+sd(mortality$PolityIV, na.rm = TRUE)
+mean(mortality$GDP, na.rm = TRUE)
+sd(mortality$GDP, na.rm = TRUE)
+```
+]
+---
+
+# Standardised Coefficients
+
+.font120[
+```{r}
+mortality$sd.polity.iv <- scale(mortality$PolityIV)
+mortality$sd.gdp <- scale(mortality$GDP)
+summary(mortality$sd.gdp)
+sd(mortality$sd.gdp, na.rm = TRUE)
+```
+]
+---
+
+# Standardised Coefficients
+
+.font120[
+```{r}
+unstd <- lm(Child.Mortality ~ GDP + PolityIV, data = mortality)
+std <- lm(Child.Mortality ~ sd.gdp + sd.polity.iv, data = mortality)
+coef(unstd)
+coef(std)
+```
+]
+---
+
+class: inverse, center, middle
+
+# Questions?
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html>  
+---
+
+class: inverse, center, middle
+
+# See you on Wednesday!
+
+<html><div style='float:left'></div><hr color='#EB811B' size=1px width=720px></html>  

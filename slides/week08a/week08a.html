@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Week 08 - Regression</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Danilo Freire" />
+    <link href="week08a_files/remark-css/default.css" rel="stylesheet" />
+    <link href="week08a_files/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="week08a_files/remark-css/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Week 08 - Regression
+## Multivariate Models, Statistical Control and Standardised Coefficients
+<html>
+<div style="float:left">
+
+</div>
+<hr color='#EB811B' size=1px width=800px>
+</html>
+### Danilo Freire
+### 11th March 2019
+
+---
+
+
+
+
+&lt;style&gt;
+
+.remark-slide-number {
+  position: inherit;
+}
+
+.remark-slide-number .progress-bar-container {
+  position: absolute;
+  bottom: 0;
+  height: 6px;
+  display: block;
+  left: 0;
+  right: 0;
+}
+
+.remark-slide-number .progress-bar {
+  height: 100%;
+  background-color: #EB811B;
+}
+
+.orange {
+  color: #EB811B;
+}
+&lt;/style&gt;
+
+# Today's Agenda
+
+.font150[
+* Brief recap of multivariate linear models
+
+* Statistical controls
+
+* Standardised coefficients
+]
+---
+
+# Multivariate Linear Models
+
+.font150[
+* We can include more than one predictor in the regression model: `lm(Y ~ X1 + X2 + ... + Xn, data = yourdataset)`
+
+* Principle of regression model stays the same: to draw the best fitting line through a cloud of points (now in multiple dimensions)
+]
+---
+
+# Credit Limit, Balance and Income
+
+.center[![:scale 100%](2numxplot1-1.png)]
+---
+
+# Multivariate Linear Model
+
+.center[![:scale 90%](newplot.png)]
+---
+
+# Interpretation
+
+.font150[
+* `\(Y = \alpha + \beta_1 X_1 + \beta_2 X_2 + ... + \beta_n X_n + \epsilon\)`
+  
+* `\(\alpha =\)` intercept, the value of `\(Y\)` when _all_ `\(X\)` variables are zero
+
+* `\(\beta_n =\)` the slope of predictor `\(X_n\)`
+
+* `\(\beta_n =\)` predicted change in `\(\hat{Y}\)` when `\(X_n\)` increases by 1 unit _and all other predictors are held constant_
+]
+---
+
+# Statistical Control
+
+.font150[
+* We include more variables in a regression also because we want to .orange[control for confounders]
+
+* We hold constant factors that we believe are also associated with `\(Y\)`
+
+* We can then _dissociate_ what can be explained by `\(X_1\)` from what can be explained by `\(X_2\)`
+
+* We have "more realistic" estimates
+ 
+* Example: impact of GDP on child mortality when political regime doesn't change
+]
+---
+
+# Child Mortality
+
+.font120[
+
+```r
+mortality &lt;- read.csv("https://raw.githubusercontent.com/pols1600/pols1600.github.io/master/datasets/prediction/bivariate_data.csv")
+mortality &lt;- subset(mortality, subset = Year == 2010)
+names(mortality)
+```
+
+```
+## [1] "X"               "Entity"          "Year"            "Country.code"   
+## [5] "GDP"             "PolityIV"        "Child.Mortality"
+```
+
+```r
+bivar &lt;- lm(Child.Mortality ~ log(GDP), data = mortality)
+multiple &lt;- lm(Child.Mortality ~ log(GDP) + PolityIV, data = mortality)
+coef(bivar)
+```
+
+```
+## (Intercept)    log(GDP) 
+##   276.58162   -26.12717
+```
+
+```r
+coef(multiple)
+```
+
+```
+## (Intercept)    log(GDP)    PolityIV 
+##  277.845620  -25.641789   -1.029062
+```
+]
+---
+
+# Adjusted R-Squared
+
+.font150[
+* As we saw last week, `\(R^2\)` is not a very good measure of model fit
+
+* The more predictors you add to the model, the higher the `\(R^2\)`
+
+* Adjusted `\(R^2\)` will equal `\(R^2\)` for one predictor variable, but lower if you add more
+
+* Adjusted `\(R^2\)` "penalises" you for adding the extra predictor variables that don't improve the existing model
+]
+---
+
+# Adjusted R-Squared
+
+.font150[
+
+```r
+summary(bivar)$r.squared
+```
+
+```
+## [1] 0.586953
+```
+
+```r
+summary(multiple)$r.squared
+```
+
+```
+## [1] 0.6113747
+```
+
+```r
+summary(multiple)$adj.r.squared
+```
+
+```
+## [1] 0.6061582
+```
+]
+---
+
+# Standardised Coefficients
+
+.font150[
+* Regression coefficients cannot be directly compared as independent variables have different scales (dollars, years, etc)
+
+* One way to make them more comparable is to standardise the variables
+
+* You already know how to standardise variables: _z-score_
+
+* (value - mean)/standard deviation
+
+* So the variables would have a mean of zero and a standard deviation of 1
+]
+---
+
+# Standardised Coefficients
+
+.font150[
+* When continuous variables are standardised, the coefficients indicate _one standard deviation change_
+
+* We can compare 1 sd in all factors
+
+* We use the `scale()` command to standardise factors
+
+* The intercept _is still_ the value of `\(\hat{Y}\)` when all predictors equal zero
+
+* .orange[But now zero is the mean value of the predictors]
+]
+---
+
+# Standardised Coefficients
+
+.font120[
+
+```r
+mean(mortality$PolityIV, na.rm = TRUE)
+```
+
+```
+## [1] 3.858025
+```
+
+```r
+sd(mortality$PolityIV, na.rm = TRUE)
+```
+
+```
+## [1] 6.263239
+```
+
+```r
+mean(mortality$GDP, na.rm = TRUE)
+```
+
+```
+## [1] 18189.2
+```
+
+```r
+sd(mortality$GDP, na.rm = TRUE)
+```
+
+```
+## [1] 19058.94
+```
+]
+---
+
+# Standardised Coefficients
+
+.font120[
+
+```r
+mortality$sd.polity.iv &lt;- scale(mortality$PolityIV)
+mortality$sd.gdp &lt;- scale(mortality$GDP)
+summary(mortality$sd.gdp)
+```
+
+```
+##        V1         
+##  Min.   :-0.9246  
+##  1st Qu.:-0.7402  
+##  Median :-0.3485  
+##  Mean   : 0.0000  
+##  3rd Qu.: 0.4939  
+##  Max.   : 5.4221  
+##  NA's   :9
+```
+
+```r
+sd(mortality$sd.gdp, na.rm = TRUE)
+```
+
+```
+## [1] 1
+```
+]
+---
+
+# Standardised Coefficients
+
+.font120[
+
+```r
+unstd &lt;- lm(Child.Mortality ~ GDP + PolityIV, data = mortality)
+std &lt;- lm(Child.Mortality ~ sd.gdp + sd.polity.iv, data = mortality)
+coef(unstd)
+```
+
+```
+##  (Intercept)          GDP     PolityIV 
+## 68.029245081 -0.001215594 -1.715946970
+```
+
+```r
+coef(std)
+```
+
+```
+##  (Intercept)       sd.gdp sd.polity.iv 
+##     39.29839    -23.16794    -10.74739
+```
+]
+---
+
+class: inverse, center, middle
+
+# Questions?
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt;  
+---
+
+class: inverse, center, middle
+
+# See you on Wednesday!
+
+&lt;html&gt;&lt;div style='float:left'&gt;&lt;/div&gt;&lt;hr color='#EB811B' size=1px width=720px&gt;&lt;/html&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"ratio": "4:3",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"slideNumberFormat": "<div class=\"progress-bar-container\">   <div class=\"progress-bar\" style=\"width: calc(%current% / %total% * 100%);\">   </div> </div>"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
